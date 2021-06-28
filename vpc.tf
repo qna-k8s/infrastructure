@@ -7,8 +7,10 @@ variable "profile"{}
 resource "aws_vpc" "vpc"{
   cidr_block = var.vpc_cidr
   enable_dns_hostnames = true
+  enable_dns_support = true
   tags = {
     Name = "vpc ${timestamp()}"
+    "kubernetes.io/cluster/${var.cluster_config.name}" = "shared"
   }
 }
 resource "aws_internet_gateway" "igw" {
@@ -24,6 +26,7 @@ resource "aws_subnet" "sb1" {
   map_public_ip_on_launch = true
   tags = {
     Name = "sb1 ${timestamp()}"
+    "kubernetes.io/cluster/${var.cluster_config.name}" = "shared"
   }
 }
 resource "aws_subnet" "sb2" {
@@ -43,6 +46,7 @@ resource "aws_subnet" "sb3" {
   map_public_ip_on_launch = true
     tags = {
     Name = "sb3 ${timestamp()}"
+    "kubernetes.io/cluster/${var.cluster_config.name}" = "shared"
   }
 }
 resource "aws_route_table" "rt" {
@@ -92,25 +96,6 @@ resource "aws_security_group" "cluster_sg" {
 resource "aws_security_group" "workernode_sg" {
   description = "Security group applied to all worker nodes"
   vpc_id      = aws_vpc.vpc.id
-
-  ingress {
-    description = "allow communication within the cluster"
-    from_port   = var.workernode_sg.cluster_traffic_https.from_port
-    to_port     = var.workernode_sg.cluster_traffic_https.to_port
-    protocol    = var.workernode_sg.cluster_traffic_https.protocol
-    security_groups=[
-      aws_security_group.cluster_sg.id
-    ]
-  }
-  ingress {
-    description = "allow communication within the cluster"
-    from_port   = var.workernode_sg.cluster_traffic.from_port
-    to_port     = var.workernode_sg.cluster_traffic.to_port
-    protocol    = var.workernode_sg.cluster_traffic.protocol
-    security_groups=[
-      aws_security_group.cluster_sg.id
-    ]
-  }
   ingress {
     description = "ssh"
     from_port   = var.workernode_sg.ssh.from_port
@@ -127,5 +112,6 @@ resource "aws_security_group" "workernode_sg" {
 
   tags = {
     Name = "worker_security_group"
+    "kubernetes.io/cluster/${var.cluster_config.name}" = "owned"
   }
 }

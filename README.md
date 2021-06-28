@@ -2,7 +2,6 @@
 **IACC to setup:**
    - EKS cluster
    - VPC, Subnets and Security Groups
-   - K8S User to perform CI/CD 
    
 **Instructions:** 
 - Set AWS_PROFILE environment variable  
